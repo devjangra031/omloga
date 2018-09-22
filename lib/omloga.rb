@@ -78,6 +78,17 @@ def omloga(args)
     end
   end
 
+  def is_parameter_line?(line)
+    line = line.to_s
+    return false if line.nil? or line.length < 10 # "Parameters" is 10 characters long. It is minimal
+
+    if line.match(/Parameters/).nil?
+      false
+    else
+      true
+    end
+  end
+
   def get_pid(line)
     match_data = line.match(/#([0-9]+)\]/)
     if match_data
@@ -114,7 +125,7 @@ def omloga(args)
       unless req
         lines_skipped+= 1
         skipped_lines.print log_line if log_skip
-        next 
+        next
       end
       is_complete = is_complete_line?(log_line)
 
@@ -129,6 +140,11 @@ def omloga(args)
         end
       else
         req.lines << log_line
+        is_parameter = is_parameter_line?(log_line)
+
+        if is_parameter
+          req.add_params_line(log_line)
+        end
       end
     end
     line_count+= 1
@@ -142,7 +158,7 @@ def omloga(args)
   puts ""
 
   if log_skip
-    puts "Skipped lines have been written to : #{options.skip_file_path}" 
+    puts "Skipped lines have been written to : #{options.skip_file_path}"
     skipped_lines.close
   end
 
